@@ -1,0 +1,42 @@
+{
+  "name": "market-engine",
+  "version": "0.0.0",
+  "description": "advanced order processing engine for economic research, simulations, and experiments",
+  "main": "index.js",
+  "scripts": {
+    "test": "node_modules/.bin/mocha --reporter spec --slow 50 --timeout 30000",
+    "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drpaulbrewer/market-engine.git"
+  },
+  "keywords": [
+    "exchange",
+    "market",
+    "double-auction",
+    "call-market",
+    "market-simulation",
+    "financial-simulation",
+    "experimental-economics",
+    "mircoeconomics",
+    "market-microstructure",
+    "market-design"
+  ],
+  "author": "drpaulbrewer@eaftc.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/drpaulbrewer/market-engine/issues"
+  },
+  "homepage": "https://github.com/drpaulbrewer/market-engine#readme",
+  "devDependencies": {
+    "coveralls": "^2.11.6",
+    "istanbul": "^0.4.2",
+    "mocha": "^2.4.5",
+    "should": "^8.2.1"
+  },
+  "dependencies": {
+    "market-pricing": "^1.0.3",
+    "partial-index": "^1.3.0"
+  }
+}
