@@ -83,6 +83,28 @@ describe('MarketEngine', function(){
 	    X.push(order);
 	});
 
+	it('array order -- should be vetoed if truncated to length===0 in before-order handler', function(){
+	    var X = new MarketEngine();
+	    var flag = 0;
+	    var order = [3,4,5,6,7,8,1,2,3];
+	    var copy = order.slice();
+	    X.on('before-order', function(myorder){
+		flag = 1;
+		myorder.slice(1).should.eql(copy);
+		assert.ok(Date.now()>=myorder[0]);
+		assert.ok((Date.now()-myorder[0])<=50);
+		this.count.should.eql(0);
+		this.a.should.eql([]);
+		myorder.length=0; // veto
+	    });
+	    X.on('order', function(myorder){
+		throw "this should not get called";
+	    });
+	    X.push(order);
+	    X.count.should.eql(0);
+	    X.a.should.eql([]);
+	});
+
 	it('object order -- should emit order with .ts and .ok fields before-order, .ts and .num  and .push(neworder) to .a and emit order', function(done){
 	    var X = new MarketEngine({pushObject:1});
 	    var flag = 0;
@@ -114,5 +136,32 @@ describe('MarketEngine', function(){
 	    });
 	    X.push(order);
 	});
+
+	it('object order -- should be vetoed if .ok field set to 0 in before-order ', function(){
+	    var X = new MarketEngine({pushObject:1});
+	    var flag = 0;
+	    var order = {q:20, buylimit: 100, id:5};	
+	    var copy = Object.assign({}, order);
+	    X.on('before-order', function(myorder){
+		flag = 1;
+		var dropTS = Object.assign({},myorder);
+		delete dropTS.ts;
+		delete dropTS.ok;
+		dropTS.should.eql(copy);
+		assert.ok(myorder.ok);
+		assert.ok(Date.now()>=myorder.ts);
+		assert.ok((Date.now()-myorder.ts)<=50);
+		this.count.should.eql(0);
+		this.a.should.eql([]);
+		myorder.ok=0; //veto
+	    });
+	    X.on('order', function(myorder){
+		throw "this should not be called";
+	    });
+	    X.push(order);
+	    X.a.should.eql([]);
+	    X.count.should.eql(0);
+	});
+
     });
 });
