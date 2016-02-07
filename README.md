@@ -37,7 +37,7 @@ If `neworder` is an `Object`, the timestamp is in `neworder.ts`
 
 Any event handler for `before-order` may veto an order. The method depends on the type
 of order.  An object order may be vetoed by setting `neworder.ok=0`.  An array order may
-be vetored by setting `neworder.length=0`.  Vetos do not prevent subsequent event handlers for
+be vetored by setting `neworder[0]=0` or `neworder.length=0`.  Vetos do not prevent subsequent event handlers for
 `before-order` from firing. If the veto is still in effect when the last `before-order` handler
 has fired, then the order will not be handled further.
 

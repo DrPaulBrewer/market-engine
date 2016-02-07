@@ -66,9 +66,10 @@ describe('MarketEngine', function(){
 	    var copy = order.slice();
 	    X.on('before-order', function(myorder){
 		flag = 1;
-		myorder.slice(1).should.eql(copy);
-		assert.ok(Date.now()>=myorder[0]);
-		assert.ok((Date.now()-myorder[0])<=50);
+		myorder.slice(2).should.eql(copy);
+		assert.ok(myorder[0]);
+		assert.ok(Date.now()>=myorder[1]);
+		assert.ok((Date.now()-myorder[1])<=50);
 		this.count.should.eql(0);
 		this.a.should.eql([]);
 	    });
@@ -90,12 +91,36 @@ describe('MarketEngine', function(){
 	    var copy = order.slice();
 	    X.on('before-order', function(myorder){
 		flag = 1;
-		myorder.slice(1).should.eql(copy);
-		assert.ok(Date.now()>=myorder[0]);
-		assert.ok((Date.now()-myorder[0])<=50);
+		myorder.slice(2).should.eql(copy);
+		assert.ok(myorder[0]);
+		assert.ok(Date.now()>=myorder[1]);
+		assert.ok((Date.now()-myorder[1])<=50);
 		this.count.should.eql(0);
 		this.a.should.eql([]);
 		myorder.length=0; // veto
+	    });
+	    X.on('order', function(myorder){
+		throw "this should not get called";
+	    });
+	    X.push(order);
+	    X.count.should.eql(0);
+	    X.a.should.eql([]);
+	});
+
+	it('array order -- should be vetoed if neworder[0] set to 0 in before-order handler', function(){
+	    var X = new MarketEngine();
+	    var flag = 0;
+	    var order = [3,4,5,6,7,8,1,2,3];
+	    var copy = order.slice();
+	    X.on('before-order', function(myorder){
+		flag = 1;
+		myorder.slice(2).should.eql(copy);
+		assert.ok(myorder[0]);
+		assert.ok(Date.now()>=myorder[1]);
+		assert.ok((Date.now()-myorder[1])<=50);
+		this.count.should.eql(0);
+		this.a.should.eql([]);
+		myorder[0]=0; // veto
 	    });
 	    X.on('order', function(myorder){
 		throw "this should not get called";
@@ -164,4 +189,30 @@ describe('MarketEngine', function(){
 	});
 
     });
+
+    describe('reduceQ', function(){
+	var X = new MarketEngine({pushArray:1,  qCol:4});
+	var Y = new MarketEngine({pushObject:1, qCol:'q'});
+	X.push([1,0,3,0,0,0,0]);
+	X.push([1,0,2,0,0,0,0]);
+	X.push([5,0,10,0,0,0,0]);
+	Y.push({p:1,q:3});
+	Y.push({p:1,q:2});
+	Y.push({p:5,q:10});
+	X.reduceQ([2,0],[10,2]);
+	Y.reduceQ([2,0],[10,2]);
+	it('should decrement quantities', function(){
+	    assert.ok(X.a[0][4]===1);
+	    assert.ok(Y.a[0].q===1);
+	    assert.ok(X.a[1][4]===2);
+	    assert.ok(Y.a[1].q===2);
+	    assert.ok(X.a[2][4]===0);
+	    assert.ok(Y.a[2].q===0);
+	});
+	it('should add fully exhausted (q===0) orders to trash', function(){
+	    X.trash.should.eql([2]);
+	    Y.trash.should.eql([2]);
+	});
+    });
+
 });

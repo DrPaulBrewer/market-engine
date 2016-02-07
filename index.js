@@ -30,11 +30,11 @@ MarketEngine.prototype.push = function(order){
     var myorder;
     if (this.o.pushArray && Array.isArray(order)){
 	myorder = order.slice();
-	myorder.unshift(Date.now());
+	myorder.unshift(1,Date.now());
 	this.emit('before-order',myorder);
-	if (myorder.length){
+	if (myorder.length && myorder[0]){
 	    this.count++;
-	    myorder.unshift(this.count);
+	    myorder[0] = this.count;
 	    this.a.push(myorder);
 	    this.emit('order',myorder);
 	}
