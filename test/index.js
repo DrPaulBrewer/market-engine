@@ -16,19 +16,53 @@ describe('MarketEngine', function(){
 	X.o.should.eql({qCol:3});
     });
 
-    it('should clear() properly and emit event clear', function(done){
-	var X = new MarketEngine({qCol:3});
-	X.a = [[1,2,3,4,5,6,7],[2,8,7,6,5,5,4]];
-        X.trash = [1];
-        X.count = 2;
-	X.on('clear', function(){
-	    X.a.should.eql([]);
-	    X.trash.should.eql([]);
-	    X.count.should.eql(0);
-	    X.o.should.eql({qCol:3});
-	    done();
+    describe('clear', function(){
+	
+	it('should clear() properly and emit event clear', function(done){
+	    var X = new MarketEngine({qCol:3});
+	    X.a = [[1,2,3,4,5,6,7],[2,8,7,6,5,5,4]];
+            X.trash = [1];
+            X.count = 2;
+	    X.on('clear', function(){
+		X.a.should.eql([]);
+		X.trash.should.eql([]);
+		X.count.should.eql(0);
+		X.o.should.eql({qCol:3});
+		done();
+	    });
+	    X.clear();
 	});
-	X.clear();
+
+	it('should work without trash', function(done){
+	    var X = new MarketEngine({qCol:3});
+	    X.a = [[1,2,3,4,5,6,7],[2,8,7,6,5,5,4]];
+            delete X.trash;
+            X.count = 2;
+	    X.on('clear', function(){
+		X.a.should.eql([]);
+		X.should.not.have.ownProperty('trash');
+		X.count.should.eql(0);
+		X.o.should.eql({qCol:3});
+		done();
+	    });
+	    X.clear();
+	});
+
+	it('should work without a', function(done){
+	    var X = new MarketEngine({qCol:3});
+	    delete X.a;
+            X.trash = [1];
+            X.count = 2;
+	    X.on('clear', function(){
+		X.should.not.have.ownProperty('a');
+		X.trash.should.eql([]);
+		X.count.should.eql(0);
+		X.o.should.eql({qCol:3});
+		done();
+	    });
+	    X.clear();
+	});
+
     });
 
     describe('push', function(){
@@ -213,6 +247,18 @@ describe('MarketEngine', function(){
 	    X.trash.should.eql([2]);
 	    Y.trash.should.eql([2]);
 	});
+    });
+
+    describe('trade', function(){
+    });
+
+    describe('expire', function(){
+    });
+
+    describe('cancel', function(){
+    });
+
+    describe('emptyTrash', function(){
     });
 
 });

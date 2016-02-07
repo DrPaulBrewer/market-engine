@@ -8,7 +8,9 @@ const EventEmitter = require('events').EventEmitter;
 function MarketEngine(options){
     EventEmitter.call(this);
     this.o = options || {pushArray:1};
-    this.clear();
+    this.a = [];
+    this.trash = [];
+    this.count = 0;
     this.on('trade-cleanup',function(tradespec){
 	if (tradespec && tradespec.buyA && tradespec.buyQ && this.o.qCol)
 	    this.reduceQ(tradespec.buyA,tradespec.buyQ);
@@ -20,8 +22,8 @@ function MarketEngine(options){
 util.inherits(MarketEngine, EventEmitter);
 
 MarketEngine.prototype.clear = function(){
-    this.a = [];
-    this.trash = [];
+    if (this.a) this.a = [];
+    if (this.trash) this.trash  = [];
     this.count = 0;
     this.emit('clear');
 };
@@ -35,7 +37,7 @@ MarketEngine.prototype.push = function(order){
 	if (myorder.length && myorder[0]){
 	    this.count++;
 	    myorder[0] = this.count;
-	    this.a.push(myorder);
+	    if (this.a) this.a.push(myorder);
 	    this.emit('order',myorder);
 	}
     } else if (this.o.pushObject && typeof(order)==='object'){
@@ -47,7 +49,7 @@ MarketEngine.prototype.push = function(order){
 	    delete myorder.ok;
 	    this.count++;
 	    myorder.num = this.count;
-	    this.a.push(myorder);
+	    if (this.a) this.a.push(myorder);
 	    this.emit('order',myorder);
 	}
     }
@@ -57,12 +59,13 @@ MarketEngine.prototype.reduceQ = function(ais, qs){
     var i=0,l=Math.max(ais.length,qs.length),qCol=this.o.qCol;
     var trash = this.trash, a=this.a;
     var order;
+    if (!a) return;
     for(i=0;i<l;++i){
 	order = a[ais[i]];
 	order[qCol] -= qs[i];
 	if (order[qCol]<0)
 	    throw new Error('quantity ('+qs[i]+') exceeded availability in order:');
-	if (order[qCol]===0)
+	if ((order[qCol]===0) && (trash))
 	    trash.push(ais[i]);
     }
 };
@@ -77,11 +80,14 @@ MarketEngine.prototype.trade = function(tradespec){
 MarketEngine.prototype.expire = function(ts){
     var i,l,order,countExpired=0;
     var xCol = this.o.txCol, qCol = this.o.qCol;
-    for(i=0,l=this.a.length;i<l;++i){
-	order = this.a[i];
+    var a = this.a, trash=this.trash;
+    if (!a) return;
+    for(i=0,l=a.length;i<l;++i){
+	order = a[i];
 	if (order && (order[xCol]>0) && (ts>order[xCol])){
 	    countExpired++;
-	    this.trash.push(i);
+	    if (trash) 
+		trash.push(i);
 	    if (qCol)
 		order[qCol]=0;
 	}
@@ -92,11 +98,14 @@ MarketEngine.prototype.expire = function(ts){
 MarketEngine.prototype.cancel = function(id){
     var i,l,order,countCancelled=0;
     var idCol = this.o.idCol, qCol = this.o.qCol;
-    for(i=0,l=this.a.length;i<l;++i){
-	order = this.a[i];
+    var a=this.a, trash=this.trash;
+    if (!a) return;
+    for(i=0,l=a.length;i<l;++i){
+	order = a[i];
 	if (order && (id===order[idCol])){
 	    countCancelled++;
-	    this.trash.push(i);
+	    if (trash)
+		trash.push(i);
 	    if (qCol)
 		order[qCol]=0;
 	}
@@ -105,14 +114,16 @@ MarketEngine.prototype.cancel = function(id){
 };
 	    
 MarketEngine.prototype.emptyTrash = function(){
-    this.trash.sort(function(a,b){ return (a-b);});
-    var i = this.trash.length,last=-1,trash=this.trash,j,uniq=[];
+    var trash = this.trash, a=this.a;
+    if (!trash || !a) return;
+    trash.sort(function(x,y){ return (x-y);});
+    var i = trash.length,last=-1,j,uniq=[];
     while(i-->0){
 	j = trash[i];
 	if (j!==last){
 	    last = j;
 	    uniq.unshift(j);
-	    this.a.splice(j,1);
+	    a.splice(j,1);
 	}
     }
     this.trash = [];
