@@ -1,6 +1,10 @@
 market-engine
 ====
 
+[![Build Status](https://travis-ci.org/DrPaulBrewer/market-engine.svg?branch=master)](https://travis-ci.org/DrPaulBrewer/market-engine)
+[![Coverage Status](https://coveralls.io/repos/github/DrPaulBrewer/market-engine/badge.svg?branch=master)](https://coveralls.io/github/DrPaulBrewer/market-engine?branch=master)
+
+
 ## Provides EventEmitter framework for market/auction implementations, order storage and insertion/cancellation/expiration functionality
 
 ### Warning: versions less than 1.0.0 are pre-release/experimental, may be subject to massive change without notice or not work 
