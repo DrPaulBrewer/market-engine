@@ -21,21 +21,47 @@ market-engine
 ##Events
     MarketEngine.on('clear', function(){...})
 
+specifies function to call when the market data is cleared 
+
     MarketEngine.on('before-order', function(neworder){ ... })
+
+specifies function to call before each order. 
+
+If `neworder` is an `Array`, a timestamp from `Date.now()` will be in `neworder[0]`
+
+If `neworder` is an `Object`, the timestamp is in `neworder.ts`
+
+Any event handler for `before-order` may veto an order. The method depends on the type
+of order.  An object order may be vetoed by setting `neworder.ok=0`.  An array order may
+be vetored by setting `neworder.length=0`.  Vetos do not prevent subsequent event handlers for
+`before-order` from firing. If the veto is still in effect when the last `before-order` handler
+has fired, then the order will not be handled further.
 
     MarketEngine.on('order', function(neworder){ ... })
 
+specifies function to call after each order.  Array orders will have the ordernum and timestamp
+prepended.  Object orders will have the ordernum in `neworder.num` and the timestamp in `neworder.ts` 
+
     MarketEngine.on('trade', function(tradespec){ ... })
+
+specifies function to call after each trade
 
     MarketEngine.on('trade-cleanup', function(tradespec){ ... })
 
+specifies function to call to clean up after each trade.  The first handler attached by default reduces the quantity
+field of each order in the tradespec and marks the order as trash if the quantity reaches zero.
+
     MarketEngine.on('after-trade', function(tradespec){ ... })
+
+specifies function to call after the trade event handlers and the trade-cleanup handlers have completed.
 
 ##Functions     
 
     MarketEngine.prototype.clear()
 
-Emits: clear
+clears the active list `this.a=[]`, the trash list `this.trash=[]` and resets `this.count` to 0, then emits "clear"
+
+Emits: clear()
 
     MarketEngine.prototype.push(neworder)
 
