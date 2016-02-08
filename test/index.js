@@ -118,6 +118,32 @@ describe('MarketEngine', function(){
 	    X.push(order);
 	});
 
+	it('array order -- should work without .a', function(done){
+	    var X = new MarketEngine();
+	    delete X.a;
+	    var flag = 0;
+	    var order = [3,4,5,6,7,8,1,2,3];
+	    var copy = order.slice();
+	    X.on('before-order', function(myorder){
+		flag = 1;
+		myorder.slice(2).should.eql(copy);
+		assert.ok(myorder[0]);
+		assert.ok(Date.now()>=myorder[1]);
+		assert.ok((Date.now()-myorder[1])<=50);
+		this.count.should.eql(0);
+		this.should.not.have.ownProperty('a');
+	    });
+	    X.on('order', function(myorder){
+		assert.ok(flag===1);
+		myorder.slice(2).should.eql(copy);
+		this.should.not.have.ownProperty('a');
+		this.count.should.eql(1);
+		done();
+	    });
+	    X.push(order);
+	});
+
+
 	it('array order -- should be vetoed if truncated to length===0 in before-order handler', function(){
 	    var X = new MarketEngine();
 	    var flag = 0;
@@ -196,7 +222,40 @@ describe('MarketEngine', function(){
 	    X.push(order);
 	});
 
-	it('object order -- should be vetoed if .ok field set to 0 in before-order ', function(){
+	it('object order -- should work without .a', function(done){
+	    var X = new MarketEngine({pushObject:1});
+	    delete X.a;
+	    var flag = 0;
+	    var order = {q:20, buylimit: 100, id:5};	
+	    var copy = Object.assign({}, order);
+	    X.on('before-order', function(myorder){
+		flag = 1;
+		var dropTS = Object.assign({},myorder);
+		delete dropTS.ts;
+		delete dropTS.ok;
+		dropTS.should.eql(copy);
+		assert.ok(myorder.ok);
+		assert.ok(Date.now()>=myorder.ts);
+		assert.ok((Date.now()-myorder.ts)<=50);
+		this.count.should.eql(0);
+		this.should.not.have.ownProperty('a');
+	    });
+	    X.on('order', function(myorder){
+		assert.ok(flag===1);
+		var drop = Object.assign({},myorder);
+		delete drop.ts;
+		delete drop.num;
+		assert(myorder.ok===undefined);
+		drop.should.eql(copy);
+		this.count.should.eql(1);
+		myorder.num.should.eql(1);
+		this.should.not.have.ownProperty('a');
+		done();
+	    });
+	    X.push(order);
+	});
+
+	it('object order -- should veto order if .ok set to zero in before-order handler ', function(){
 	    var X = new MarketEngine({pushObject:1});
 	    var flag = 0;
 	    var order = {q:20, buylimit: 100, id:5};	
@@ -250,15 +309,204 @@ describe('MarketEngine', function(){
     });
 
     describe('trade', function(){
+	it('should decrement quantities via reduceQ', function(){
+	    var X = new MarketEngine({pushArray:1,  qCol:4});
+	    var Y = new MarketEngine({pushObject:1, qCol:'q'});
+	    X.push([1,0,3,0,0,0,0]);
+	    X.push([1,0,2,0,0,0,0]);
+	    X.push([5,0,10,0,0,0,0]);
+	    Y.push({p:1,q:3});
+	    Y.push({p:1,q:2});
+	    Y.push({p:5,q:10});
+	    X.trade({buyA:[2],buyQ:[10],sellA:[0],sellQ:[2]});
+	    Y.trade({sellA:[2,0],sellQ:[10,2]});
+	    assert.ok(X.a[0][4]===1);
+	    assert.ok(Y.a[0].q===1);
+	    assert.ok(X.a[1][4]===2);
+	    assert.ok(Y.a[1].q===2);
+	    assert.ok(X.a[2][4]===0);
+	    assert.ok(Y.a[2].q===0);
+	}); 
+	it('should emit trade, trade-cleanup and after-trade', function(){
+	    var X = new MarketEngine();
+	    var flag = {};
+	    X.on('trade', function(){
+		flag.should.eql({});
+		flag.trade=1;
+	    });
+	    X.on('trade-cleanup', function(){
+		flag.should.eql({trade:1});
+		flag.cleanup=1;
+	    });
+	    X.on('after-trade', function(){
+		flag.should.eql({trade:1,cleanup:1});
+		flag.after=1;
+	    });
+	    X.trade();
+	    flag.should.eql({trade:1,cleanup:1,after:1});
+	});
     });
 
     describe('expire', function(){
+	it('.expire(5000) should expire orders expiring earler than 5000 and not others', function(){
+	    var X = new MarketEngine({pushArray:1, qCol: 4, txCol:3});
+	    X.push([1000,4000,10]);
+	    X.push([1200,7000,5]);
+	    X.push([1750,4500,3]);
+	    X.push([2000,6000,4]);
+	    X.push([2200,0,7]);
+	    X.push([2500,4950,1]);
+	    X.push([3000,6000,5]);
+	    X.expire(5000);
+	    assert.ok(X.a[0][4]===0);
+	    assert.ok(X.a[1][4]===5);
+	    assert.ok(X.a[2][4]===0);
+	    assert.ok(X.a[3][4]===4);
+	    assert.ok(X.a[4][4]===7);
+	    assert.ok(X.a[5][4]===0);
+	    assert.ok(X.a[6][4]===5);
+	    X.trash.should.eql([0,2,5]);
+	});
+
+	it('.expire(5000) should stil work when .trash does not exist', function(){
+	    var X = new MarketEngine({pushArray:1, qCol: 4, txCol:3});
+	    delete X.trash;
+	    X.push([1000,4000,10]);
+	    X.push([1200,7000,5]);
+	    X.push([1750,4500,3]);
+	    X.push([2000,6000,4]);
+	    X.push([2200,0,7]);
+	    X.push([2500,4950,1]);
+	    X.push([3000,6000,5]);
+	    X.expire(5000);
+	    assert.ok(X.a[0][4]===0);
+	    assert.ok(X.a[1][4]===5);
+	    assert.ok(X.a[2][4]===0);
+	    assert.ok(X.a[3][4]===4);
+	    assert.ok(X.a[4][4]===7);
+	    assert.ok(X.a[5][4]===0);
+	    assert.ok(X.a[6][4]===5);
+	});
+
+	it('.expire(5000) should not throw if .a does not exist', function(){
+	    var X = new MarketEngine({pushArray:1, qCol: 4, txCol:3});
+	    delete X.a;
+	    X.push([1000,4000,10]);
+	    X.push([1200,7000,5]);
+	    X.push([1750,4500,3]);
+	    X.push([2000,6000,4]);
+	    X.push([2200,0,7]);
+	    X.push([2500,4950,1]);
+	    X.push([3000,6000,5]);
+	    X.expire(5000);
+	    X.should.not.have.ownProperty('a');
+	});
+
     });
 
     describe('cancel', function(){
+	it('cancel(4) should cancel orders by id 4 and not others', function(){
+	    var X = new MarketEngine({pushArray:1, qCol: 4, txCol:3, idCol:5});
+	    X.push([1000,4000,10,1]);
+	    X.push([1200,7000,5,3]);
+	    X.push([1750,4500,3,4]);
+	    X.push([2000,6000,4,7]);
+	    X.push([2200,0,7,4]);
+	    X.push([2500,4950,1,9]);
+	    X.push([3000,6000,5,11]);
+	    X.cancel(4);
+	    assert.ok(X.a[0][4]===10);
+	    assert.ok(X.a[1][4]===5);
+	    assert.ok(X.a[2][4]===0);
+	    assert.ok(X.a[3][4]===4);
+	    assert.ok(X.a[4][4]===0);
+	    assert.ok(X.a[5][4]===1);
+	    assert.ok(X.a[6][4]===5);
+	    X.trash.should.eql([2,4]);
+	});
+
+	it('cancel(4) should still work if .trash does not exist', function(){
+	    var X = new MarketEngine({pushArray:1, qCol: 4, txCol:3, idCol:5});
+	    delete X.trash;
+	    X.push([1000,4000,10,1]);
+	    X.push([1200,7000,5,3]);
+	    X.push([1750,4500,3,4]);
+	    X.push([2000,6000,4,7]);
+	    X.push([2200,0,7,4]);
+	    X.push([2500,4950,1,9]);
+	    X.push([3000,6000,5,11]);
+	    X.cancel(4);
+	    assert.ok(X.a[0][4]===10);
+	    assert.ok(X.a[1][4]===5);
+	    assert.ok(X.a[2][4]===0);
+	    assert.ok(X.a[3][4]===4);
+	    assert.ok(X.a[4][4]===0);
+	    assert.ok(X.a[5][4]===1);
+	    assert.ok(X.a[6][4]===5);
+	    X.should.not.have.ownProperty('trash');
+	});
+
+	it('cancel(4) should not throw if .a does not exist', function(){
+	    var X = new MarketEngine({pushArray:1, qCol: 4, txCol:3, idCol:5});
+	    delete X.a;
+	    X.push([1000,4000,10,1]);
+	    X.push([1200,7000,5,3]);
+	    X.push([1750,4500,3,4]);
+	    X.push([2000,6000,4,7]);
+	    X.push([2200,0,7,4]);
+	    X.push([2500,4950,1,9]);
+	    X.push([3000,6000,5,11]);
+	    X.cancel(4);
+	    X.should.not.have.ownProperty('a');
+	});
     });
 
     describe('emptyTrash', function(){
-    });
+	it('should return undefined if .trash or .a does not exist', function(){
+	    var X = new MarketEngine();
+	    delete X.trash;
+	    var Y = new MarketEngine();
+	    delete Y.a;
+	    assert(X.emptyTrash()===undefined);
+	    assert(Y.emptyTrash()===undefined);
+	});
 
+	it('should return deduplicated removal list', function(){
+	    var X = new MarketEngine({pushArray:1, qCol: 4, txCol:3, idCol:5});
+	    X.push([1000,4000,10,1]);
+	    X.push([1200,7000,5,3]);
+	    X.push([1750,4500,3,4]);
+	    X.push([2000,6000,4,7]);
+	    X.push([2200,0,7,4]);
+	    X.push([2500,4950,1,9]);
+	    X.push([3000,6000,5,11]);
+	    X.cancel(4);
+	    X.expire(5000);
+	    X.trash.should.eql([2,4,0,2,5]);
+	    X.emptyTrash().should.eql([0,2,4,5]);
+	});
+
+	it('should delete previously cancelled and expired orders and leave others', function(){
+	    var X = new MarketEngine({pushArray:1, qCol: 4, txCol:3, idCol:5});
+	    X.push([1000,4000,10,1]);
+	    X.push([1200,7000,5,3]);
+	    X.push([1750,4500,3,4]);
+	    X.push([2000,6000,4,7]);
+	    X.push([2200,0,7,4]);
+	    X.push([2500,4950,1,9]);
+	    X.push([3000,6000,5,11]);
+	    X.cancel(4);
+	    X.expire(5000);
+	    X.trash.should.eql([2,4,0,2,5]);
+	    X.emptyTrash().should.eql([0,2,4,5]);
+	    assert.ok(X.a.length===3);
+	    X.a[0].slice(2).should.eql([1200,7000,5,3]);
+	    X.a[1].slice(2).should.eql([2000,6000,4,7]);
+	    X.a[2].slice(2).should.eql([3000,6000,5,11]);
+	});
+
+    });
+    
+    
+    
 });
