@@ -80,6 +80,7 @@ Emits: trade, trade-cleanup, after-trade
 requires:  options.idCol, options.qCol
 
 optional:  options.cancelCol (shortens search if a previous cancel/replace found)
+
     MarketEngine.prototype.expire(ts)
 
 requires: options.txCol, options.qCol
