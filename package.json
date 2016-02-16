@@ -1,6 +1,6 @@
 {
   "name": "market-engine",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "event-driven market engine for economic research, simulations, and experiments",
   "main": "index.js",
   "scripts": {
