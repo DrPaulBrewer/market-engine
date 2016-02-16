@@ -422,7 +422,7 @@ describe('MarketEngine', function(){
 	    assert.ok(X.a[4][4]===0);
 	    assert.ok(X.a[5][4]===1);
 	    assert.ok(X.a[6][4]===5);
-	    X.trash.should.eql([2,4]);
+	    X.trash.should.eql([4,2]);
 	});
 
 	it('cancel(4) should still work if .trash does not exist', function(){
@@ -482,7 +482,7 @@ describe('MarketEngine', function(){
 	    X.push([3000,6000,5,11]);
 	    X.cancel(4);
 	    X.expire(5000);
-	    X.trash.should.eql([2,4,0,2,5]);
+	    X.trash.should.eql([4,2,0,2,5]);
 	    X.emptyTrash().should.eql([0,2,4,5]);
 	});
 
@@ -497,7 +497,7 @@ describe('MarketEngine', function(){
 	    X.push([3000,6000,5,11]);
 	    X.cancel(4);
 	    X.expire(5000);
-	    X.trash.should.eql([2,4,0,2,5]);
+	    X.trash.should.eql([4,2,0,2,5]);
 	    X.emptyTrash().should.eql([0,2,4,5]);
 	    assert.ok(X.a.length===3);
 	    X.a[0].slice(2).should.eql([1200,7000,5,3]);

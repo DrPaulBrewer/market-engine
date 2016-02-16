@@ -99,8 +99,10 @@ MarketEngine.prototype.cancel = function(id){
     var i,l,order,countCancelled=0;
     var idCol = this.o.idCol, qCol = this.o.qCol;
     var a=this.a, trash=this.trash;
+    var cancelCol = this.o.cancelCol;
     if (!a) return;
-    for(i=0,l=a.length;i<l;++i){
+    i = a.length;
+    while(i-->0){ 
 	order = a[i];
 	if (order && (id===order[idCol])){
 	    countCancelled++;
@@ -108,6 +110,8 @@ MarketEngine.prototype.cancel = function(id){
 		trash.push(i);
 	    if (qCol)
 		order[qCol]=0;
+	    if (cancelCol && order[cancelCol])
+		i = 0; // skip because earlier cancel cancelled others
 	}
     }
     return countCancelled;
