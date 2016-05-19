@@ -143,6 +143,29 @@ describe('MarketEngine', function(){
 	    X.push(order);
 	});
 
+	it('array order -- should be vetoed if rejected with this.reject() in before-order handler', function(){
+	    var X = new MarketEngine();
+	    var flag = 0;
+	    var order = [3,4,5,6,7,8,1,2,3];
+	    var copy = order.slice();
+	    X.on('before-order', function(myorder){
+		flag = 1;
+		myorder.slice(2).should.eql(copy);
+		assert.ok(myorder[0]);
+		assert.ok(Date.now()>=myorder[1]);
+		assert.ok((Date.now()-myorder[1])<=50);
+		this.count.should.eql(0);
+		this.a.should.eql([]);
+		this.reject(myorder); // veto
+	    });
+	    X.on('order', function(myorder){
+		throw "this should not get called";
+	    });
+	    X.push(order);
+	    X.count.should.eql(0);
+	    X.a.should.eql([]);
+	});
+
 
 	it('array order -- should be vetoed if truncated to length===0 in before-order handler', function(){
 	    var X = new MarketEngine();
@@ -166,7 +189,7 @@ describe('MarketEngine', function(){
 	    X.count.should.eql(0);
 	    X.a.should.eql([]);
 	});
-
+	
 	it('array order -- should be vetoed if neworder[0] set to 0 in before-order handler', function(){
 	    var X = new MarketEngine();
 	    var flag = 0;
@@ -254,6 +277,33 @@ describe('MarketEngine', function(){
 	    });
 	    X.push(order);
 	});
+
+	it('object order -- should veto order if rejected with this.reject(order) in before-order handler ', function(){
+	    var X = new MarketEngine({pushObject:1});
+	    var flag = 0;
+	    var order = {q:20, buylimit: 100, id:5};	
+	    var copy = Object.assign({}, order);
+	    X.on('before-order', function(myorder){
+		flag = 1;
+		var dropTS = Object.assign({},myorder);
+		delete dropTS.ts;
+		delete dropTS.ok;
+		dropTS.should.eql(copy);
+		assert.ok(myorder.ok);
+		assert.ok(Date.now()>=myorder.ts);
+		assert.ok((Date.now()-myorder.ts)<=50);
+		this.count.should.eql(0);
+		this.a.should.eql([]);
+		this.reject(myorder); //veto
+	    });
+	    X.on('order', function(myorder){
+		throw "this should not be called";
+	    });
+	    X.push(order);
+	    X.a.should.eql([]);
+	    X.count.should.eql(0);
+	});
+
 
 	it('object order -- should veto order if .ok set to zero in before-order handler ', function(){
 	    var X = new MarketEngine({pushObject:1});

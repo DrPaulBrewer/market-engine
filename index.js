@@ -28,6 +28,15 @@ MarketEngine.prototype.clear = function(){
     this.emit('clear');
 };
 
+MarketEngine.prototype.reject = function(order){
+    if (this.o.pushArray && Array.isArray(order)){
+	order[0] = 0;
+    } else if (this.o.pushObject && typeof(order)==='object'){
+	order.ok = false;
+    }
+};
+    
+
 MarketEngine.prototype.push = function(order){
     var myorder;
     if (this.o.pushArray && Array.isArray(order)){
