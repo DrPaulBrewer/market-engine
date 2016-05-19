@@ -5,6 +5,16 @@
 const util = require('util');
 const EventEmitter = require('events').EventEmitter;
 
+var reject = function(order){
+    // for use in MarketEngine before-order event handler
+    if (Array.isArray(order)){
+	order[0] = 0;
+	order.length = 0;
+    } else if (typeof(order)==='object') {
+	order.ok = false;
+    }
+};
+
 function MarketEngine(options){
     EventEmitter.call(this);
     this.o = options || {pushArray:1};
@@ -28,21 +38,12 @@ MarketEngine.prototype.clear = function(){
     this.emit('clear');
 };
 
-MarketEngine.prototype.reject = function(order){
-    if (this.o.pushArray && Array.isArray(order)){
-	order[0] = 0;
-    } else if (this.o.pushObject && typeof(order)==='object'){
-	order.ok = false;
-    }
-};
-    
-
 MarketEngine.prototype.push = function(order){
     var myorder;
     if (this.o.pushArray && Array.isArray(order)){
 	myorder = order.slice();
 	myorder.unshift(1,Date.now());
-	this.emit('before-order',myorder);
+	this.emit('before-order',myorder,reject);
 	if (myorder.length && myorder[0]){
 	    this.count++;
 	    myorder[0] = this.count;
@@ -53,7 +54,7 @@ MarketEngine.prototype.push = function(order){
 	myorder = Object.assign({},order);
 	myorder.ts = Date.now();
 	myorder.ok = 1;
-	this.emit('before-order',myorder);
+	this.emit('before-order',myorder,reject);
 	if (myorder.ok){
 	    delete myorder.ok;
 	    this.count++;

@@ -143,12 +143,12 @@ describe('MarketEngine', function(){
 	    X.push(order);
 	});
 
-	it('array order -- should be vetoed if rejected with this.reject() in before-order handler', function(){
+	it('array order -- should be vetoed if rejected with reject() in before-order handler', function(){
 	    var X = new MarketEngine();
 	    var flag = 0;
 	    var order = [3,4,5,6,7,8,1,2,3];
 	    var copy = order.slice();
-	    X.on('before-order', function(myorder){
+	    X.on('before-order', function(myorder,reject){
 		flag = 1;
 		myorder.slice(2).should.eql(copy);
 		assert.ok(myorder[0]);
@@ -156,7 +156,7 @@ describe('MarketEngine', function(){
 		assert.ok((Date.now()-myorder[1])<=50);
 		this.count.should.eql(0);
 		this.a.should.eql([]);
-		this.reject(myorder); // veto
+		reject(myorder); // veto
 	    });
 	    X.on('order', function(myorder){
 		throw "this should not get called";
@@ -278,12 +278,12 @@ describe('MarketEngine', function(){
 	    X.push(order);
 	});
 
-	it('object order -- should veto order if rejected with this.reject(order) in before-order handler ', function(){
+	it('object order -- should veto order if rejected with reject(order) in before-order handler ', function(){
 	    var X = new MarketEngine({pushObject:1});
 	    var flag = 0;
 	    var order = {q:20, buylimit: 100, id:5};	
 	    var copy = Object.assign({}, order);
-	    X.on('before-order', function(myorder){
+	    X.on('before-order', function(myorder, reject){
 		flag = 1;
 		var dropTS = Object.assign({},myorder);
 		delete dropTS.ts;
@@ -294,7 +294,7 @@ describe('MarketEngine', function(){
 		assert.ok((Date.now()-myorder.ts)<=50);
 		this.count.should.eql(0);
 		this.a.should.eql([]);
-		this.reject(myorder); //veto
+		reject(myorder); //veto
 	    });
 	    X.on('order', function(myorder){
 		throw "this should not be called";
