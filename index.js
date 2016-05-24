@@ -134,7 +134,7 @@ MarketEngine.prototype.cancel = function(id){
 		trash.push(i);
 	    if (qCol!==undefined)
 		order[qCol]=0;
-	    if ((cancelCol!==undefined) && (order[cancelCol]))
+	    if (order[cancelCol])
 		i = 0; // skip because earlier cancel cancelled others
 	}
     }

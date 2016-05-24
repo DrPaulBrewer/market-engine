@@ -518,8 +518,8 @@ describe('MarketEngine', function(){
 	    X.trash.should.eql([4,2]);
 	});
 
-	it('bump should refer to cancelCol to recognize cancelReplace orders and cancel earlier orders by same id', function(){
-	    var X = new MarketEngine({pushArray:1, qCol: 4, txCol:3, idCol:5, cancelCol:6});
+	it('bump should refer to cancelCol to recognize cancelReplace orders and cancel some earlier orders by same id', function(){
+	    var X = new MarketEngine({pushArray:1, qCol: 4, idCol:5, cancelCol:6});
 	    X.push([1000,4000,10,1,0]);
 	    X.push([1200,7000,5,3,0]);
 	    X.push([1750,4500,3,4,0]);
@@ -527,6 +527,29 @@ describe('MarketEngine', function(){
 	    X.push([2200,0,7,4,0]);
 	    X.push([2500,4950,1,9,0]);
 	    X.push([3000,6000,5,11,0]);
+	    X.push([5000,0,2,4,1]); 
+	    /* last order is cancelReplace from id 4 */
+	    assert.ok(X.a[0][4]===10);
+	    assert.ok(X.a[1][4]===5);
+	    assert.ok(X.a[2][4]===0);
+	    assert.ok(X.a[3][4]===4);
+	    assert.ok(X.a[4][4]===0);
+	    assert.ok(X.a[5][4]===1);
+	    assert.ok(X.a[6][4]===5);
+	    X.trash.should.eql([4,2]);
+	});
+
+	it('orders preceding a preceding cancelReplace order are not scanned and not deleted (for performance)', function(){
+	    var X = new MarketEngine({pushArray:1, qCol: 4, idCol:5, cancelCol:6});
+	    X.o.noBump = true; /* turn off cancel/expire checking */
+	    X.push([1000,4000,10,4,0]); /* changed id to 4, will not be scanned */
+	    X.push([1200,7000,5,3,0]);
+	    X.push([1750,4500,3,4,1]); /* set cancelCol for cancel replace */
+	    X.push([2000,6000,4,7,0]); /* set cancelCol */
+	    X.push([2200,0,7,4,0]);
+	    X.push([2500,4950,1,9,0]);
+	    X.push([3000,6000,5,11,0]);
+	    X.o.noBump=false; /* turn cancel/expire checking on */
 	    X.push([5000,0,2,4,1]); 
 	    /* last order is cancelReplace from id 4 */
 	    assert.ok(X.a[0][4]===10);
