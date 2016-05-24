@@ -339,11 +339,25 @@ describe('MarketEngine', function(){
 	X.push([1,0,3,0,0,0,0]);
 	X.push([1,0,2,0,0,0,0]);
 	X.push([5,0,10,0,0,0,0]);
+	X.push([7,0,2,0,0,0,0]);
 	Y.push({p:1,q:3});
 	Y.push({p:1,q:2});
 	Y.push({p:5,q:10});
+	Y.push({p:7,q:2});
 	X.reduceQ([2,0],[10,2]);
 	Y.reduceQ([2,0],[10,2]);
+	var throwX=0, throwY=0;
+	/* excessive reduction */
+	try {
+	    X.reduceQ([3],[3]);
+	} catch(e){
+	    throwX = 1;
+	}
+	try {
+	    Y.reduceQ([3],[3]);
+	} catch(e){
+	    throwY = 1;
+	}
 	it('should decrement quantities', function(){
 	    assert.ok(X.a[0][4]===1);
 	    assert.ok(Y.a[0].q===1);
@@ -355,6 +369,12 @@ describe('MarketEngine', function(){
 	it('should add fully exhausted (q===0) orders to trash', function(){
 	    X.trash.should.eql([2]);
 	    Y.trash.should.eql([2]);
+	});
+	it('should throw when quantity reduction makes q negative', function(){
+	    assert.ok(throwX);
+	    assert.ok(throwY);
+	    assert.ok(X.a[3][4]===-1);
+	    assert.ok(Y.a[3].q===-1);
 	});
     });
 
