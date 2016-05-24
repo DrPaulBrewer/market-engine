@@ -143,9 +143,9 @@ describe('MarketEngine', function(){
 	    X.push(order);
 	});
 
-	it('array order -- should be vetoed if rejected with reject() in before-order handler', function(){
+	it('array order -- should be vetoed if rejected with reject() in before-order handler, which sets col 0 to 0', function(){
 	    var X = new MarketEngine();
-	    var flag = 0;
+	    var flag = 0, zeroOrderLength=0, zeroFirstColumn=0;
 	    var order = [3,4,5,6,7,8,1,2,3];
 	    var copy = order.slice();
 	    X.on('before-order', function(myorder,reject){
@@ -158,12 +158,21 @@ describe('MarketEngine', function(){
 		this.a.should.eql([]);
 		reject(myorder); // veto
 	    });
+	    X.on('before-order', function(myorder, reject){
+		if (myorder.length===0)
+		    zeroOrderLength++;
+		if (myorder[0]===0)
+		    zeroFirstColumn++;
+	    });
 	    X.on('order', function(myorder){
 		throw "this should not get called";
 	    });
 	    X.push(order);
 	    X.count.should.eql(0);
 	    X.a.should.eql([]);
+	    flag.should.equal(1);
+	    zeroOrderLength.should.equal(0);
+	    zeroFirstColumn.should.equal(1);
 	});
 
 
