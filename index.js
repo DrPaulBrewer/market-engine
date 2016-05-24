@@ -9,7 +9,6 @@ var reject = function(order){
     // for use in MarketEngine before-order event handler
     if (Array.isArray(order)){
 	order[0] = 0;
-	order.length = 0;
     } else if (typeof(order)==='object') {
 	order.ok = false;
     }
