@@ -38,6 +38,18 @@ MarketEngine.prototype.clear = function(){
     this.emit('clear');
 };
 
+MarketEngine.prototype.bump = function(neworder){
+    var countRemoved=0;
+    var cancelCol=this.o.cancelCol, tCol=this.o.tCol, idCol=this.o.idCol;
+    if ((cancelCol!==undefined) && (idCol!==undefined) && (neworder[cancelCol])){
+	countRemoved += this.cancel(neworder[idCol]);
+    }
+    if ((tCol!==undefined) && neworder[tCol]){
+	countRemoved += this.expire(neworder[tCol]);
+    }
+    if (countRemoved>0) this.emit('bump');
+};
+
 MarketEngine.prototype.push = function(order){
     var myorder;
     if (this.o.pushArray && Array.isArray(order)){
@@ -47,6 +59,7 @@ MarketEngine.prototype.push = function(order){
 	if (myorder.length && myorder[0]){
 	    this.count++;
 	    myorder[0] = this.count;
+	    if (!this.o.noBump) this.bump(myorder);
 	    if (this.a) this.a.push(myorder);
 	    this.emit('order',myorder);
 	}
@@ -59,6 +72,7 @@ MarketEngine.prototype.push = function(order){
 	    delete myorder.ok;
 	    this.count++;
 	    myorder.num = this.count;
+	    if (!this.o.noBump) this.bump(myorder);
 	    if (this.a) this.a.push(myorder);
 	    this.emit('order',myorder);
 	}
@@ -91,14 +105,14 @@ MarketEngine.prototype.expire = function(ts){
     var i,l,order,countExpired=0;
     var xCol = this.o.txCol, qCol = this.o.qCol;
     var a = this.a, trash=this.trash;
-    if (!a) return;
+    if ((!a) || (xCol===undefined)) return;
     for(i=0,l=a.length;i<l;++i){
 	order = a[i];
 	if (order && (order[xCol]>0) && (ts>order[xCol])){
 	    countExpired++;
 	    if (trash) 
 		trash.push(i);
-	    if (qCol)
+	    if (qCol!==undefined)
 		order[qCol]=0;
 	}
     }
@@ -118,9 +132,9 @@ MarketEngine.prototype.cancel = function(id){
 	    countCancelled++;
 	    if (trash)
 		trash.push(i);
-	    if (qCol)
+	    if (qCol!==undefined)
 		order[qCol]=0;
-	    if (cancelCol && order[cancelCol])
+	    if ((cancelCol!==undefined) && (order[cancelCol]))
 		i = 0; // skip because earlier cancel cancelled others
 	}
     }
