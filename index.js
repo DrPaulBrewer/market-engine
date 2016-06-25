@@ -31,8 +31,8 @@ function MarketEngine(options){
 util.inherits(MarketEngine, EventEmitter);
 
 MarketEngine.prototype.clear = function(){
-    if (this.a) this.a = [];
-    if (this.trash) this.trash  = [];
+    if (this.a && this.a.length) this.a.length=0;
+    if (this.trash && this.trash.length ) this.trash.length  = 0;
     this.count = 0;
     this.emit('clear');
 };
