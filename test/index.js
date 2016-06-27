@@ -9,11 +9,12 @@ describe('MarketEngine', function(){
     });
 
     it('should initialize properly', function(){
-	var X = new MarketEngine({qCol:3});
+	var X = new MarketEngine({qCol:3, goods: "X"});
 	X.a.should.eql([]);
 	X.trash.should.eql([]);
 	X.count.should.eql(0);
-	X.o.should.eql({qCol:3});
+	X.o.should.eql({qCol:3, goods:"X"});
+	X.goods.should.equal("X");
     });
 
     describe('clear', function(){

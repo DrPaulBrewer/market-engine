@@ -16,7 +16,7 @@ market-engine
 ##Initialization
 
     var MarketEngine = require('market-engine');
-    XMarket = new MarketEngine({qCol: order-quantity-column-number});
+    XMarket = new MarketEngine({qCol: order-quantity-column-number, goods:"X"});
 
 ##Usage
 

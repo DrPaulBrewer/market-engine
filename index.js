@@ -17,6 +17,8 @@ var reject = function(order){
 function MarketEngine(options){
     EventEmitter.call(this);
     this.o = options || {pushArray:1};
+    if (this.o.goods)
+	this.goods = this.o.goods;
     this.a = [];
     this.trash = [];
     this.count = 0;
