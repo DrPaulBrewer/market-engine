@@ -425,6 +425,18 @@ describe('MarketEngine', function(){
 	    X.trade();
 	    flag.should.eql({trade:1,cleanup:1,after:1});
 	});
+	it('goods and money properties set on tradespec', function(){
+	    var X = new MarketEngine({goods: 'X', money:"coins"});
+	    var flag = 0;
+	    X.on('trade', function(tradespec){
+		tradespec.should.have.properties('goods','money');
+		tradespec.goods.should.equal("X");
+		tradespec.money.should.equal("coins");
+		flag = 1;
+	    });
+	    X.trade({});
+	    flag.should.equal(1);
+	});
     });
 
     describe('expire', function(){

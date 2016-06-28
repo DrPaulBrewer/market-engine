@@ -97,6 +97,10 @@ MarketEngine.prototype.reduceQ = function(ais, qs){
 
 MarketEngine.prototype.trade = function(tradespec){
     var i,l,order;
+    if (this.o.goods)
+	tradespec.goods = this.o.goods;
+    if (this.o.money)
+	tradespec.money = this.o.money;
     this.emit('trade',tradespec);
     this.emit('trade-cleanup', tradespec);
     this.emit('after-trade',tradespec);
