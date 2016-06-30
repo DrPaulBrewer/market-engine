@@ -92,9 +92,10 @@ Emits: clear()
 processes neworder, as follows:
 
 1. fires  *before-order*
-2. exits if order rejected by a *before-order* handler
-3. calls `MarketEngine.prototype.bump(neworder)` or unrejected `neworder`, clearing any expired or cancelled orders
-4. fires *order*
+1. exits if order rejected by a *before-order* handler
+1. prepends/sets order number and timestamp as first two fields of `neworder` array
+1. calls `MarketEngine.prototype.bump(neworder)` or unrejected `neworder`, clearing any expired or cancelled orders
+1. fires *order*
 
 Code listening for *order* may call `MarketEngine.prototype.trade(tradespec)` to indicate a trade in accordance
 with some set of market rules, to be defined by the developer. 
