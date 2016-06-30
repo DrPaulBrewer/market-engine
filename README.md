@@ -52,21 +52,21 @@ If `neworder` is an `Object`, the timestamp is in `neworder.ts`
 Any event handler for `before-order` may reject an order, by using the `reject` function that is supplied
 as a 2nd parameter, like this:  `return reject(neworder)`
 
-    MarketEngine.on('order', function(neworder){ ... })
+    XMarket.on('order', function(neworder){ ... })
 
 specifies function to call after each order.  Array orders will have the ordernum and timestamp
 prepended.  Object orders will have the ordernum in `neworder.num` and the timestamp in `neworder.ts` 
 
-    MarketEngine.on('trade', function(tradespec){ ... })
+    XMarket.on('trade', function(tradespec){ ... })
 
 specifies function to call after each trade
 
-    MarketEngine.on('trade-cleanup', function(tradespec){ ... })
+    XMarket.on('trade-cleanup', function(tradespec){ ... })
 
 specifies function to call to clean up after each trade.  The first handler attached by default reduces the quantity
 field of each order in the tradespec and marks the order as trash if the quantity reaches zero.
 
-    MarketEngine.on('after-trade', function(tradespec){ ... })
+    XMarket.on('after-trade', function(tradespec){ ... })
 
 specifies function to call after the trade event handlers and the trade-cleanup handlers have completed.
 
