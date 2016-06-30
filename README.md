@@ -94,7 +94,7 @@ processes neworder, as follows:
 1. fires  *before-order*
 1. exits if order rejected by a *before-order* handler
 1. prepends/sets order number and timestamp as first two fields of `neworder` array
-1. calls `MarketEngine.prototype.bump(neworder)` or unrejected `neworder`, clearing any expired or cancelled orders
+1. calls `MarketEngine.prototype.bump(neworder)`, trashing any previously expired or cancelled orders
 1. fires *order*
 
 Code listening for *order* may call `MarketEngine.prototype.trade(tradespec)` to indicate a trade in accordance
