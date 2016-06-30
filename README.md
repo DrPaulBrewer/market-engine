@@ -37,6 +37,9 @@ MarketEngine defines these events:
 *after-trade* -- Fired after *trade-cleanup*
 
 ##Setting Event Handlers
+
+In the explanations below, `XMarket` is a variable containing an instance of `MarketEngine`. 
+
     XMarket.on('clear', function(){...})
 
 specifies function to call when the market data is cleared 
