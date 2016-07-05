@@ -2,7 +2,7 @@
   "name": "market-engine",
   "version": "0.7.1",
   "description": "event-driven market engine for economic research, simulations, and experiments",
-  "main": "lib/index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "node_modules/.bin/mocha --harmony --reporter spec --slow 50 --timeout 2000",
     "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- --harmony -R spec test/*"
