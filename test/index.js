@@ -1,6 +1,12 @@
-var assert = require('assert');
-var should = require('should');
-var MarketEngine = require("../index.js");
+/* const assert = require('assert');
+const should = require('should');
+const MarketEngine = require("../src/index.js");
+
+*/
+
+import assert;
+import should;
+import MarketEngine from '../src/index.js';
 
 describe('MarketEngine', function(){
     
