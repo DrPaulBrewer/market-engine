@@ -7,7 +7,9 @@ market-engine
 
 ## Provides EventEmitter framework for market/auction implementations, order storage and insertion/cancellation/expiration functionality
 
-### Warning: versions less than 1.0.0 are pre-release/experimental, may be subject to massive change without notice or not work 
+### Warning
+
+versions less than 1.0.0 are pre-release/experimental.  ES6 code (beginning with v0.7.0) may require the most modern browsers and/or node v6 or a transpiler to ES6.
 
 ##Installation
 
