@@ -6,6 +6,10 @@ module.exports = {
         "node": true
     },
     "extends": "eslint:recommended",
+    "parserOptions": {
+       "ecmaVersion": 6,
+       "sourceType": "module"
+    },
     "rules": {
         "accessor-pairs": "error",
         "array-bracket-spacing": "error",
@@ -107,7 +111,7 @@ module.exports = {
         "no-lonely-if": "error",
         "no-loop-func": "error",
         "no-magic-numbers": "off",
-        "no-mixed-operators": "error",
+        "no-mixed-operators": "off",
         "no-mixed-requires": "error",
         "no-multi-spaces": "off",
         "no-multi-str": "error",
@@ -196,7 +200,7 @@ module.exports = {
                 "before": false
             }
         ],
-        "sort-imports": "error",
+        "sort-imports": "off",
         "sort-vars": "off",
         "space-before-blocks": "off",
         "space-before-function-paren": "off",

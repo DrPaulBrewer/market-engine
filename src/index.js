@@ -160,5 +160,5 @@ export class MarketEngine extends EventEmitter {
         this.trash = [];
         return uniq;
     }
-};
+}
 
