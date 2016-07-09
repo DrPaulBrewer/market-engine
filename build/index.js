@@ -203,5 +203,3 @@ var MarketEngine = exports.MarketEngine = function (_EventEmitter) {
 
     return MarketEngine;
 }(_events.EventEmitter);
-
-;
