@@ -2,7 +2,8 @@
   "name": "market-engine",
   "version": "0.10.0",
   "description": "event-driven market engine for economic research, simulations, and experiments",
-  "main": "src/index.js",
+  "main": "build/index.js",
+  "jsnext:main": "src/index.js",
   "scripts": {
     "clean": "rm -rf ./build ./doc ; mkdir ./build",
     "build": "node_modules/.bin/babel build src/index.js -o build/index.js",
