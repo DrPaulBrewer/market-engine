@@ -1,7 +1,9 @@
 /* eslint-env node, mocha */
-const assert = require('assert');
-require('should');
-const MarketEngine = require("../src/index.js");
+
+import assert from 'assert';
+import 'should';
+import {MarketEngine} from '../src/index.js';
+
 
 describe('MarketEngine', ()=>{
     

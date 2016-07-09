@@ -2,7 +2,7 @@
 /* Copyright 2016 Paul Brewer, Economic & Financial Technology Consulting LLC, <drpaulbrewer@eaftc.com>  */
 /* Open Source License:  The MIT License. See included License.md file or https://opensource.org/licenses/MIT */
 
-const EventEmitter = require('events').EventEmitter;
+import {EventEmitter} from 'events';
 
 function reject(order){
     // for use in MarketEngine before-order event handler
@@ -13,10 +13,10 @@ function reject(order){
     }
 }
 
-module.exports = class MarketEngine extends EventEmitter {
-    constructor(options){
+export class MarketEngine extends EventEmitter {
+    constructor(options={pushArray:1}){
         super();
-        this.o = options || {pushArray:1};
+        this.o = options;
         if (this.o.goods)
             this.goods = this.o.goods;
         this.a = [];
