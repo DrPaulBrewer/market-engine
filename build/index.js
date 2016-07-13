@@ -19,6 +19,11 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+/**
+ * mark an order as rejected by setting first column or .ok to 0
+ *
+ */
+
 function reject(order) {
     // for use in MarketEngine before-order event handler
     if (Array.isArray(order)) {
@@ -28,20 +33,72 @@ function reject(order) {
     }
 }
 
+/**
+ * Market "Engine" providing some minimal housekeeping functions for a trading exchange, but no economic functions.
+ *
+ */
+
 var MarketEngine = exports.MarketEngine = function (_EventEmitter) {
     _inherits(MarketEngine, _EventEmitter);
+
+    /**
+     * create MarketEngine
+     *
+     * @param {Object} [options={pushArray:1}] options copied to this.o
+     * @param [string] [options.goods] sets name of goods to be traded in this market
+     * @param [string] [options.money] sets name of money used in this market
+     * @param {number|string} [options.idCol] order column number or name for id number of agent submitting the order
+     * @param {number|string} [options.cancelCol] order column number or name for indicating cancellation (1) or no cancellation (0) of previous orders by this agent
+     * @param {number|string} [options.tCol] order column number or name for time of order
+     * @param {number|string} [options.txCol] order column number or name for expiration time of order
+     * @param {number|string} [options.qCol] order column number or name for quantity to buy or sell
+     * @param {boolean} [options.noBump] if truthy, no cancel/expire search of old orders is performed when pre-processing new orders
+     * @listens {trade-cleanup(tradespec)} to reduce order quantity by quantity tradedo
+     */
 
     function MarketEngine() {
         var options = arguments.length <= 0 || arguments[0] === undefined ? { pushArray: 1 } : arguments[0];
 
         _classCallCheck(this, MarketEngine);
 
+        /** 
+         * options passed to constructor 
+         * @type {Object} this.o 
+         *
+         */
+
         var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MarketEngine).call(this));
 
         _this.o = options;
+
+        /** 
+         * name of goods traded in this market
+         * @type {string} this.o.goods
+         */
+
         if (_this.o.goods) _this.goods = _this.o.goods;
+
+        /**
+         * list of active orders
+         * orders may be objects or arrays of fixed length
+         * @type {Array<Object|number[]>} this.a
+         */
+
         _this.a = [];
+
+        /**
+         * list of indexes into this.a[] of trashed orders to be removed
+         * @type {number[]} this.trash
+         */
+
         _this.trash = [];
+
+        /**
+         * counter of order number stamp
+         *
+         * @type {number} this.count
+         */
+
         _this.count = 0;
         _this.on('trade-cleanup', function (tradespec) {
             if (tradespec && tradespec.buyA && tradespec.buyQ && this.o.qCol) this.reduceQ(tradespec.buyA, tradespec.buyQ);
@@ -49,6 +106,11 @@ var MarketEngine = exports.MarketEngine = function (_EventEmitter) {
         });
         return _this;
     }
+
+    /**
+     * clear active and trash list, reset counter, and emit clear event
+     * @emits {clear} after clearing active and trash lists and resetting counter
+     */
 
     _createClass(MarketEngine, [{
         key: 'clear',
@@ -58,6 +120,15 @@ var MarketEngine = exports.MarketEngine = function (_EventEmitter) {
             this.count = 0;
             this.emit('clear');
         }
+
+        /**
+         * cancel or expire orders prior to processing new order.
+         * new orders can be marked cancelReplace, necessitating a cancel search.
+         * new orders also update simulation time, necessitating an expired order search.
+         * @param {Object|number[]} neworder
+         * @emits {bump} after cancelling or expiring any old orders
+         */
+
     }, {
         key: 'bump',
         value: function bump(neworder) {
@@ -73,6 +144,20 @@ var MarketEngine = exports.MarketEngine = function (_EventEmitter) {
             }
             if (countRemoved > 0) this.emit('bump');
         }
+
+        /**
+         * "push" a new order to the market
+         * performs housekeeping:
+         * 1. pre-adding fields such as processing timestamp and order number
+         * 1. emitting before-order(myorder,function reject()) to allow customized order acceptance/rejection rules
+         * 1. procesing any cancellation or expiration triggered in pre-processing of the order with this.bump(myorder)
+         * 1. If the this.a activer list exists, add the new order to the active list
+         * 1. emit order(myorder) to allow for additional customized processing (such as identifying trades or enforcing other rules)
+         * @param {Object|number[]} order A new order to the market for processing
+         * @emits {before-order(myorder, reject())} to allow customized rejection rules for orders
+         * @emits {order(myorder)} to allow customized rules and trading procedures
+         */
+
     }, {
         key: 'push',
         value: function push(order) {
@@ -103,6 +188,17 @@ var MarketEngine = exports.MarketEngine = function (_EventEmitter) {
                 }
             }
         }
+
+        /**
+         * reduce the amounts of orders at active array indexes ais by amounts qs.
+         * Calls trash.push(ais[i]), pushing indexes to trash list, for affected orders reduced to zero quantity.
+         * Reducing an order to a negative quantity throws Error.
+         *
+         * @param {number[]} ais Indexes in the active array this.a[] of the orders to be affected.
+         * @param {number[]} qs Amounts for reduction in the quantity of the affected orders. 
+         * @throws {Error} if order is reduced to a negative quantity
+         */
+
     }, {
         key: 'reduceQ',
         value: function reduceQ(ais, qs) {
@@ -120,6 +216,17 @@ var MarketEngine = exports.MarketEngine = function (_EventEmitter) {
                 if (order[qCol] === 0 && trash) trash.push(ais[i]);
             }
         }
+
+        /** 
+         * Register a trade in this market.
+         * Sets tradespec.goods and tradespec.money to market goods and money, if any. 
+         * Then emits trade(tradeSpec), trade-cleanup(tradeSpec), and after-trade(tradeSpec) for further processing.
+         * @param {Object} tradeSpec
+         * @emits {trade(tradeSpec)} to allow custom processing of trade
+         * @emits {trade-cleanup(tradeSpec)} to allow custom cleanup of market structures after processing trade
+         * @emits {after-trade(tradeSpec)} to allow custom post-processing after trade
+         */
+
     }, {
         key: 'trade',
         value: function trade(tradespec) {
@@ -129,6 +236,14 @@ var MarketEngine = exports.MarketEngine = function (_EventEmitter) {
             this.emit('trade-cleanup', tradespec);
             this.emit('after-trade', tradespec);
         }
+
+        /**
+         * find and expire orders.
+         * Orders are expired if supplied time ts is greater than order txCol.  
+         * Orders are expired by setting quantity to 0 and adding to trash list
+         * @param {number} ts The current effective market time
+         */
+
     }, {
         key: 'expire',
         value: function expire(ts) {
@@ -151,6 +266,14 @@ var MarketEngine = exports.MarketEngine = function (_EventEmitter) {
             }
             return countExpired;
         }
+
+        /** 
+         * find and cancel previous orders by id.
+         * Orders are cancelled by setting quantity to 0 and adding to trash list.
+         * Optimistic searching is done: if an order is found which itself has a cancelCol set, the search is complete. 
+         * @param {number} id The id number of an agent whose orders will be cancelled.
+         */
+
     }, {
         key: 'cancel',
         value: function cancel(id) {
@@ -175,6 +298,13 @@ var MarketEngine = exports.MarketEngine = function (_EventEmitter) {
             }
             return countCancelled;
         }
+
+        /**
+         * delete the orders in the trash list from the active list.
+         * Orders are deleted from the active list using Array.splice, so order indexes in this.a[] will also change. 
+         * 
+         */
+
     }, {
         key: 'emptyTrash',
         value: function emptyTrash() {
