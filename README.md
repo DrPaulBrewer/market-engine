@@ -5,11 +5,11 @@ market-engine
 [![Coverage Status](https://coveralls.io/repos/github/DrPaulBrewer/market-engine/badge.svg?branch=master)](https://coveralls.io/github/DrPaulBrewer/market-engine?branch=master)
 
 
-## Provides EventEmitter framework for market/auction implementations, order storage and insertion/cancellation/expiration functionality
+Provides EventEmitter framework for market/auction implementations, order storage and insertion/cancellation/expiration functionality
 
-### Warning
+##Documentation moved to esdoc
 
-versions less than 1.0.0 are pre-release/experimental.  ES6 code (beginning with v0.7.0) may require the most modern browsers and/or node v6 or a transpiler to ES6.
+[esdoc pages for market-engine](https://doc.esdoc.org/github.com/DrPaulBrewer/market-engine/)
 
 ##Installation
 
@@ -17,12 +17,25 @@ versions less than 1.0.0 are pre-release/experimental.  ES6 code (beginning with
 
 ##Initialization
 
-    var MarketEngine = require('market-engine');
-    XMarket = new MarketEngine({qCol: order-quantity-column-number, goods:"X"});
+    import MarketEngine from 'market-engine'; // ES6
+
+
+    var MarketEngine = require('market-engine'); // CJS
+
+##Usage
+
+MarketEngine is used as a base class for building classes representing market exchanges with some set of customized rules.  
+
+MarketEngine does the housekeeping of maintaining an active list of orders, a trash list, and provides a framework for handline new orders and trades, 
+without specifying the ultimate form of orders or the rules of trade.  
+
+##Subclasses
+
+For a subclass implementing sequential double auction trading rules, see [market-example-contingent](https://www.npmjs.com/package/market-example-contingent)
 
 ##Events 
 
-MarketEngine defines these events:
+MarketEngine is an EventEmitter.  Here is an event reference.  
 
 *bump* -- Fired when one or more orders are cancelled or expired.  
 
@@ -75,7 +88,7 @@ field of each order in the tradespec and marks the order as trash if the quantit
 
 specifies function to call after the trade event handlers and the trade-cleanup handlers have completed.
 
-##Functions     
+##Functions, also see ESdoc documentation.
 
     MarketEngine.prototype.bump(neworder)
     
@@ -143,3 +156,16 @@ requires: options.qCol
     MarketEngine.prototype.emptyTrash()
 
 Delete any previously trashed orders from active list `this.a`
+
+### Warning
+
+versions less than 1.0.0 are pre-release/experimental. 
+
+##Copyright 
+
+Copyright 2016 Paul Brewer, Economic and Financial Technology Consulting LLC
+
+##License
+
+[MIT](./LICENSE.md)
+
