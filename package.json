@@ -1,6 +1,6 @@
 {
   "name": "market-engine",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "description": "event-driven market engine for economic research, simulations, and experiments",
   "main": "build/index.js",
   "jsnext:main": "src/index.js",
