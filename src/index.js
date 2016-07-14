@@ -29,8 +29,10 @@ export class MarketEngine extends EventEmitter {
      * create MarketEngine
      *
      * @param {Object} [options={pushArray:1}] options copied to this.o
-     * @param [string] [options.goods] sets name of goods to be traded in this market
-     * @param [string] [options.money] sets name of money used in this market
+     * @param {string} [options.goods] sets name of goods to be traded in this market
+     * @param {string} [options.money] sets name of money used in this market
+     * @param {boolean} [options.pushArray] truthy if orders are numeric arrays 
+     * @param {boolean} [options.pushObject] truthy if orders are objects
      * @param {number|string} [options.idCol] order column number or name for id number of agent submitting the order
      * @param {number|string} [options.cancelCol] order column number or name for indicating cancellation (1) or no cancellation (0) of previous orders by this agent
      * @param {number|string} [options.tCol] order column number or name for time of order
