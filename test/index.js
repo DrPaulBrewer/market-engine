@@ -104,13 +104,14 @@ describe('MarketEngine', ()=>{
             X.push(order);
         });
 
-        it('array order -- should emit timestamped array before-order, unshift count and .push(neworder) to .a and emit order', (done)=>{
+        it('array order -- should emit timestamped array before-order, unshift count and emit preorder, finally .push(neworder) to .a and emit order', (done)=>{
             const X = new MarketEngine();
-            let flag = 0;
+            let bflag = 0;
+            let pflag = 0;
             let order = [3,4,5,6,7,8,1,2,3];
             let copy = order.slice();
             X.on('before-order', function(myorder){
-                flag = 1;
+                bflag = 1;
                 myorder.slice(2).should.eql(copy);
                 assert.ok(myorder[0]);
                 assert.ok(Date.now()>=myorder[1]);
@@ -118,8 +119,15 @@ describe('MarketEngine', ()=>{
                 this.count.should.eql(0);
                 this.a.should.eql([]);
             });
+            X.on('preorder', function(myorder){
+                assert.ok(bflag===1);
+                myorder[0].should.eql(1);
+                this.a.length.should.eql(0);
+                pflag = 1;
+            });
             X.on('order', function(myorder){
-                assert.ok(flag===1);
+                assert.ok(bflag===1);
+                assert.ok(pflag===1);
                 myorder.slice(2).should.eql(copy);
                 this.a[0].slice(2).should.eql(copy);
                 this.count.should.eql(1);
@@ -156,7 +164,7 @@ describe('MarketEngine', ()=>{
 
         it('array order -- should be vetoed if rejected with reject() in before-order handler, which sets col 0 to 0', ()=>{
             const X = new MarketEngine();
-            let flag = 0, zeroOrderLength=0, zeroFirstColumn=0;
+            let flag = 0, rflag = 0, zeroOrderLength=0, zeroFirstColumn=0;
             let order = [3,4,5,6,7,8,1,2,3];
             let copy = order.slice();
             X.on('before-order', function(myorder,reject){
@@ -175,13 +183,22 @@ describe('MarketEngine', ()=>{
                 if (myorder[0]===0)
                     zeroFirstColumn++;
             });
+            X.on('reject', function(myorder){
+                myorder[0].should.eql(0);
+                myorder.slice(2).should.eql(copy);
+                rflag = 1;
+            });
+            X.on('preorder', function(){
+                throw new Error("event preorder should not be fired");
+            });
             X.on('order', function(){
-                throw new Error("this should not get called");
+                throw new Error("event order should not be fired");
             });
             X.push(order);
             X.count.should.eql(0);
             X.a.should.eql([]);
             flag.should.equal(1);
+            rflag.should.equal(1);
             zeroOrderLength.should.equal(0);
             zeroFirstColumn.should.equal(1);
         });
@@ -191,6 +208,7 @@ describe('MarketEngine', ()=>{
             const X = new MarketEngine();
             let order = [3,4,5,6,7,8,1,2,3];
             let copy = order.slice();
+            let rflag = 0;
             X.on('before-order', function(myorder){
                 myorder.slice(2).should.eql(copy);
                 assert.ok(myorder[0]);
@@ -200,16 +218,24 @@ describe('MarketEngine', ()=>{
                 this.a.should.eql([]);
                 myorder.length=0; // veto
             });
+            X.on('reject', function(){
+                rflag = 1;
+            });
+            X.on('preorder', function(){
+                throw new Error("event preorder should not be fired");
+            });
             X.on('order', function(){
                 throw new Error("this should not get called");
             });
             X.push(order);
+            rflag.should.eql(1);
             X.count.should.eql(0);
             X.a.should.eql([]);
         });
         
         it('array order -- should be vetoed if neworder[0] set to 0 in before-order handler', ()=>{
             const X = new MarketEngine();
+            let rflag = 0;
             let order = [3,4,5,6,7,8,1,2,3];
             let copy = order.slice();
             X.on('before-order', function(myorder){
@@ -221,10 +247,17 @@ describe('MarketEngine', ()=>{
                 this.a.should.eql([]);
                 myorder[0]=0; // veto
             });
+            X.on('reject', function(){
+                rflag = 1;
+            });
+            X.on('preorder', function(){
+                throw new Error("event preorder should not be fired");
+            });
             X.on('order', function(){
                 throw new Error("this should not get called");
             });
             X.push(order);
+            rflag.should.eql(1);
             X.count.should.eql(0);
             X.a.should.eql([]);
         });
@@ -245,6 +278,9 @@ describe('MarketEngine', ()=>{
                 assert.ok((Date.now()-myorder.ts)<=50);
                 this.count.should.eql(0);
                 this.a.should.eql([]);
+            });
+            X.on('reject', function(){
+                throw new Error("should not fire emit reject");
             });
             X.on('order', function(myorder){
                 assert.ok(flag===1);
@@ -321,7 +357,8 @@ describe('MarketEngine', ()=>{
 
         it('object order -- should veto order if .ok set to zero in before-order handler ', ()=>{
             const X = new MarketEngine({pushObject:1});
-            let order = {q:20, buylimit: 100, id:5};    
+            let order = {q:20, buylimit: 100, id:5};
+            let rflag = 0;
             let copy = Object.assign({}, order);
             X.on('before-order', function(myorder){
                 let dropTS = Object.assign({},myorder);
@@ -335,11 +372,16 @@ describe('MarketEngine', ()=>{
                 this.a.should.eql([]);
                 myorder.ok=0; // veto
             });
+            X.on('reject', function(myorder){
+                myorder.q.should.eql(20);
+                rflag = 1;
+            });
             X.on('order', function(){
                 throw new Error("this should not be called");
             });
             X.push(order);
             X.a.should.eql([]);
+            rflag.should.eql(1);
             X.count.should.eql(0);
         });
 

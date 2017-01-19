@@ -152,11 +152,16 @@ var MarketEngine = exports.MarketEngine = function (_EventEmitter) {
          * performs housekeeping:
          * 1. pre-adding fields such as processing timestamp and order number
          * 1. emitting before-order(myorder,function reject()) to allow customized order acceptance/rejection rules
+         * 1. if rejected, emitting reject(myorder) to allow additional processing or logging of rejected orders, after setting a rejection flag (which can still be unset)
+         * 1. assigning the order number in myorder[0] 
+         * 1. emitting preorder(myorder) for logging or additional processing before order affects books, other orders, or trades
          * 1. procesing any cancellation or expiration triggered in pre-processing of the order with this.bump(myorder)
-         * 1. If the this.a activer list exists, add the new order to the active list
+         * 1. If the this.a active list exists, add the new order to the active list
          * 1. emit order(myorder) to allow for additional customized processing (such as identifying trades or enforcing other rules)
          * @param {Object|number[]} order A new order to the market for processing
          * @emits {before-order(myorder, reject())} to allow customized rejection rules for orders
+         * @emits {reject(myorder)} to allow for logging or other processing of rejected orders
+         * @emits {preorder(myorder)} to allow for logging or other processing of acceptable orders
          * @emits {order(myorder)} to allow customized rules and trading procedures
          */
 
@@ -171,9 +176,12 @@ var MarketEngine = exports.MarketEngine = function (_EventEmitter) {
                 if (myorder.length && myorder[0]) {
                     this.count++;
                     myorder[0] = this.count;
+                    this.emit('preorder', myorder);
                     if (!this.o.noBump) this.bump(myorder);
                     if (this.a) this.a.push(myorder);
                     this.emit('order', myorder);
+                } else {
+                    this.emit('reject', myorder);
                 }
             } else if (this.o.pushObject && (typeof order === 'undefined' ? 'undefined' : _typeof(order)) === 'object') {
                 myorder = Object.assign({}, order);
@@ -184,9 +192,12 @@ var MarketEngine = exports.MarketEngine = function (_EventEmitter) {
                     delete myorder.ok;
                     this.count++;
                     myorder.num = this.count;
+                    this.emit('preorder', myorder);
                     if (!this.o.noBump) this.bump(myorder);
                     if (this.a) this.a.push(myorder);
                     this.emit('order', myorder);
+                } else {
+                    this.emit('reject', myorder);
                 }
             }
         }
