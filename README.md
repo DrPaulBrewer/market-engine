@@ -1,5 +1,4 @@
-market-engine
-====
+# market-engine
 
 [![Greenkeeper badge](https://badges.greenkeeper.io/DrPaulBrewer/market-engine.svg)](https://greenkeeper.io/)
 
@@ -9,33 +8,33 @@ market-engine
 
 Provides EventEmitter framework for market/auction implementations, order storage and insertion/cancellation/expiration functionality
 
-##Documentation moved to esdoc
+## Documentation moved to esdoc
 
 [esdoc pages for market-engine](https://doc.esdoc.org/github.com/DrPaulBrewer/market-engine/)
 
-##Installation
+## Installation
 
     npm install market-engine --save
 
-##Initialization
+## Initialization
 
     import MarketEngine from 'market-engine'; // ES6
 
 
     var MarketEngine = require('market-engine'); // CJS
 
-##Usage
+## Usage
 
 MarketEngine is used as a base class for building classes representing market exchanges with some set of customized rules.  
 
 MarketEngine does the housekeeping of maintaining an active list of orders, a trash list, and provides a framework for handline new orders and trades, 
 without specifying the ultimate form of orders or the rules of trade.  
 
-##Subclasses
+## Subclasses
 
 For a subclass implementing sequential double auction trading rules, see [market-example-contingent](https://www.npmjs.com/package/market-example-contingent)
 
-##Events 
+## Events 
 
 MarketEngine is an EventEmitter.  Here is an event reference.  
 
@@ -53,7 +52,7 @@ MarketEngine is an EventEmitter.  Here is an event reference.
 
 *after-trade* -- Fired after *trade-cleanup*
 
-##Setting Event Handlers
+## Setting Event Handlers
 
 In the explanations below, `XMarket` is a variable containing an instance of `MarketEngine`. 
 
@@ -163,11 +162,11 @@ Delete any previously trashed orders from active list `this.a`
 
 versions less than 1.0.0 are pre-release/experimental. 
 
-##Copyright 
+## Copyright 
 
 Copyright 2016 Paul Brewer, Economic and Financial Technology Consulting LLC
 
-##License
+## License
 
 [MIT](./LICENSE.md)
 
