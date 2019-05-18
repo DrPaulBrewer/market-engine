@@ -1,7 +1,7 @@
 language: node_js
 
 node_js:
-  - 6
+  - stable
 
 install:
   - npm install
@@ -9,10 +9,6 @@ install:
 script:
   - npm run lint
   - npm run lint-test
-  - npm run cover
-
-after_script: 
-  - "cat coverage/lcov.info | node_modules/coveralls/bin/coveralls.js"
-
-
+  - npm run test
+  - npm run coverage
 

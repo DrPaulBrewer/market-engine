@@ -6,13 +6,13 @@
   "jsnext:main": "src/index.js",
   "scripts": {
     "clean": "rm -rf ./build ./doc ; mkdir ./build",
-    "build": "node_modules/.bin/babel build src/index.js -o build/index.js",
-    "doc": "node_modules/.bin/esdoc -c esdoc.json",
-    "lint": "node_modules/.bin/eslint src/index.js",
-    "lint-test": "node_modules/.bin/eslint test/index.js",
-    "test": "node_modules/.bin/mocha --compilers js:babel-core/register --reporter spec --slow 50 --timeout 60000",
-    "cover": "node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- -u exports --compilers js:babel-register --timeout 60000",
-    "go": "npm run clean && npm run lint && npm run lint-test && npm run test && npm run build"
+    "build": "babel build src/index.js -o build/index.js",
+    "doc": "esdoc -c esdoc.json",
+    "lint": "eslint src/index.js",
+    "lint-test": "eslint test/index.js",
+    "test": "nyc --reporter=text mocha --require @babel/register --slow 50 --timeout 60000",
+    "coverage": "nyc --reporter=text-lcov --require @babel/register mocha --timeout 60000 | coveralls",
+    "go": "npm run clean && npm run lint && npm run lint-test && npm run test && npm run build "
   },
   "repository": {
     "type": "git",
@@ -35,15 +35,16 @@
   },
   "homepage": "https://github.com/drpaulbrewer/market-engine#readme",
   "devDependencies": {
-    "babel": "^6.23.0",
-    "babel-cli": "^6.24.1",
-    "babel-core": "^6.24.1",
-    "babel-preset-es2015": "^6.24.1",
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.0.0",
+    "@babel/polyfill": "^7.2.5",
+    "@babel/preset-env": "^7.0.0",
+    "@babel/register": "^7.0.0",
     "coveralls": "^3.0.0",
-    "esdoc": "^1.0.3",
-    "eslint": "^4.9.0",
-    "istanbul": "^1.0.0-alpha.2",
-    "mocha": "^5.0.0",
+    "esdoc": "^1.1.0",
+    "eslint": "^5.14.1",
+    "mocha": "^6.1.4",
+    "nyc": "^14.0.0",
     "should": "^13.1.2"
   }
 }
