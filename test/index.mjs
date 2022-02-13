@@ -2,18 +2,18 @@
 
 import assert from 'assert';
 import 'should';
-import {MarketEngine} from '../src/index.js';
+import {MarketEngine} from '../src/index.mjs';
 
 
 describe('MarketEngine', ()=>{
-    
+
     it('should be a function', ()=>{
         MarketEngine.should.be.type('function');
     });
 
     it('should initialize properly', ()=>{
         const X = new MarketEngine({
-            qCol:3, 
+            qCol:3,
             goods: "X"
         });
         X.a.should.eql([]);
@@ -24,7 +24,7 @@ describe('MarketEngine', ()=>{
     });
 
     describe('clear', ()=>{
-        
+
         it('should clear() properly and emit event clear', (done)=>{
             const X = new MarketEngine({
                 qCol:3
@@ -94,7 +94,7 @@ describe('MarketEngine', ()=>{
 
         it('should ignore object type orders if so configured', ()=>{
             const X = new MarketEngine({});
-            let order = {q:20, buylimit: 100, id:5};    
+            let order = {q:20, buylimit: 100, id:5};
             X.on('before-order', function(){
                 throw new Error("this should not happen");
             });
@@ -232,7 +232,7 @@ describe('MarketEngine', ()=>{
             X.count.should.eql(0);
             X.a.should.eql([]);
         });
-        
+
         it('array order -- should be vetoed if neworder[0] set to 0 in before-order handler', ()=>{
             const X = new MarketEngine();
             let rflag = 0;
@@ -265,7 +265,7 @@ describe('MarketEngine', ()=>{
         it('object order -- should emit order with .ts and .ok fields before-order, .ts and .num  and .push(neworder) to .a and emit order', (done)=>{
             const X = new MarketEngine({pushObject:1});
             let flag = 0;
-            let order = {q:20, buylimit: 100, id:5};    
+            let order = {q:20, buylimit: 100, id:5};
             let copy = Object.assign({}, order);
             X.on('before-order', function(myorder){
                 flag = 1;
@@ -301,7 +301,7 @@ describe('MarketEngine', ()=>{
             const X = new MarketEngine({pushObject:1});
             delete X.a;
             let flag = 0;
-            let order = {q:20, buylimit: 100, id:5};    
+            let order = {q:20, buylimit: 100, id:5};
             let copy = Object.assign({}, order);
             X.on('before-order', function(myorder){
                 flag = 1;
@@ -332,7 +332,7 @@ describe('MarketEngine', ()=>{
 
         it('object order -- should veto order if rejected with reject(order) in before-order handler ', ()=>{
             const X = new MarketEngine({pushObject:1});
-            let order = {q:20, buylimit: 100, id:5};    
+            let order = {q:20, buylimit: 100, id:5};
             let copy = Object.assign({}, order);
             X.on('before-order', function(myorder, reject){
                 let dropTS = Object.assign({},myorder);
@@ -390,6 +390,8 @@ describe('MarketEngine', ()=>{
     describe('reduceQ', ()=>{
         const X = new MarketEngine({pushArray:1,  qCol:4});
         const Y = new MarketEngine({pushObject:1, qCol:'q'});
+        const Z = new MarketEngine({pushArray:1, qCol:4});
+        const ZZ = new MarketEngine({pushArray:1, qCol:4});
         X.push([1,0,3,0,0,0,0]);
         X.push([1,0,2,0,0,0,0]);
         X.push([5,0,10,0,0,0,0]);
@@ -400,6 +402,7 @@ describe('MarketEngine', ()=>{
         Y.push({p:7,q:2});
         X.reduceQ([2,0],[10,2]);
         Y.reduceQ([2,0],[10,2]);
+        // Z and ZZ are empty
         let throwX=0, throwY=0;
         // excessive reduction
         try {
@@ -430,6 +433,33 @@ describe('MarketEngine', ()=>{
             assert.ok(X.a[3][4]===-1);
             assert.ok(Y.a[3].q===-1);
         });
+        it('should throw when array parameters are mismatched', ()=>{
+          function bad1(){
+            X.reduceQ([0],[1,2]);
+          }
+          function bad2(){
+            Y.reduceQ([1,2],[1]);
+          }
+          bad1.should.throw();
+          bad2.should.throw();
+        });
+        it('should throw when a non-existent order is reduced', ()=>{
+          function bad1(){
+            X.reduceQ([5],[1]);
+          }
+          function bad2(){
+            Z.reduceQ([0],[1]);
+          }
+          bad1.should.throw();
+          bad2.should.throw();
+        });
+        it('should ignore requests on an object without the .a property', ()=>{
+          delete ZZ.a;
+          function good(){
+            ZZ.reduceQ([1],[1]);
+          }
+          good.should.not.throw();
+        });
     });
 
     describe('trade', ()=>{
@@ -450,7 +480,7 @@ describe('MarketEngine', ()=>{
             assert.ok(Y.a[1].q===2);
             assert.ok(X.a[2][4]===0);
             assert.ok(Y.a[2].q===0);
-        }); 
+        });
         it('should emit trade, trade-cleanup and after-trade', ()=>{
             const X = new MarketEngine();
             let flag = {};
@@ -593,7 +623,7 @@ describe('MarketEngine', ()=>{
             X.push([2200,0,7,4,0]);
             X.push([2500,4950,1,9,0]);
             X.push([3000,6000,5,11,0]);
-            X.push([5000,0,2,4,1]); 
+            X.push([5000,0,2,4,1]);
             // last order is cancelReplace from id 4
             assert.ok(X.a[0][4]===10);
             assert.ok(X.a[1][4]===5);
@@ -616,7 +646,7 @@ describe('MarketEngine', ()=>{
             X.push([2500,4950,1,9,0]);
             X.push([3000,6000,5,11,0]);
             X.o.noBump=false; /* turn cancel/expire checking on */
-            X.push([5000,0,2,4,1]); 
+            X.push([5000,0,2,4,1]);
             // last order is cancelReplace from id 4
             assert.ok(X.a[0][4]===10);
             assert.ok(X.a[1][4]===5);
@@ -707,5 +737,5 @@ describe('MarketEngine', ()=>{
             X.a[1].slice(2).should.eql([2000,6000,4,7]);
             X.a[2].slice(2).should.eql([3000,6000,5,11]);
         });
-    });    
+    });
 });
