@@ -1,8 +1,7 @@
 # market-engine
 
 ![Build Status](https://github.com/DrPaulBrewer/market-engine/actions/workflows/node.js.yml/badge.svg)
-
-![Coverage Status](https://coveralls.io/repos/github/DrPaulBrewer/market-engine/badge.svg?branch=master)](https://coveralls.io/github/DrPaulBrewer/market-engine?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/DrPaulBrewer/market-engine/badge.svg?branch=master)](https://coveralls.io/github/DrPaulBrewer/market-engine?branch=master)
 
 
 Provides EventEmitter framework for market/auction implementations, order storage and insertion/cancellation/expiration functionality
