@@ -9,7 +9,7 @@ import {EventEmitter} from 'events';
  *
  */
 
-function reject(order){
+function reject(orders){  // changed order to orders so this should fail eslint and tests
     // for use in MarketEngine before-order event handler
     if (Array.isArray(order)){
         order[0] = 0;
