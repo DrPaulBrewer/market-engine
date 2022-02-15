@@ -1,8 +1,6 @@
 # market-engine
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/DrPaulBrewer/market-engine.svg)](https://greenkeeper.io/)
-
-[![Build Status](https://travis-ci.org/DrPaulBrewer/market-engine.svg?branch=master)](https://travis-ci.org/DrPaulBrewer/market-engine)
+[![Build Status](https://github.com/DrPaulBrewer/market-engine/actions/workflows/node.js.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/DrPaulBrewer/market-engine/badge.svg?branch=master)](https://coveralls.io/github/DrPaulBrewer/market-engine?branch=master)
 
 
