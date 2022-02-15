@@ -9,8 +9,9 @@ import {EventEmitter} from 'events';
  *
  */
 
-function reject(order){
+function rejectOrder(order){
     // for use in MarketEngine before-order event handler
+    // an order is marked rejected by setting either element 0 to 0 or .ok to false
     if (Array.isArray(order)){
         order[0] = 0;
     } else if (typeof(order)==='object') {
@@ -146,7 +147,7 @@ export class MarketEngine extends EventEmitter {
         if (this.o.pushArray && Array.isArray(order)){
             myorder = order.slice();
             myorder.unshift(1,Date.now());
-            this.emit('before-order',myorder,reject);
+            this.emit('before-order',myorder,rejectOrder);
             if (myorder.length && myorder[0]){
                 this.count++;
                 myorder[0] = this.count;
@@ -161,7 +162,7 @@ export class MarketEngine extends EventEmitter {
             myorder = Object.assign({},order);
             myorder.ts = Date.now();
             myorder.ok = 1;
-            this.emit('before-order',myorder,reject);
+            this.emit('before-order',myorder,rejectOrder);
             if (myorder.ok){
                 delete myorder.ok;
                 this.count++;
@@ -192,10 +193,10 @@ export class MarketEngine extends EventEmitter {
         let order;
         if (!a) return;
         if (ais.length!==qs.length)
-          throw new Error("market-engine:reduce array parameters should be equal length, got:"+ais.length+' '+qs.length);
+          throw new Error("market-engine:reduce The array parameters should be equal length, got lengths:"+ais.length+' '+qs.length);
         for(i=0;i<l;++i){
             order = a[ais[i]];
-            order[qCol] -= qs[i];
+            order[qCol] -= qs[i]; // if order is undefined, this will throw
             if (order[qCol]<0)
                 throw new Error('quantity ('+qs[i]+') exceeded availability in order:');
             if ((order[qCol]===0) && (trash))

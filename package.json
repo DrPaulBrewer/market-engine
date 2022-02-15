@@ -7,7 +7,7 @@
     "docs": "rm -rf ./docs && npx jsdoc -c .jsdoc.conf.json --access all src/index.mjs && mv out docs",
     "lint": "eslint src/index.mjs",
     "lint-test": "eslint test/index.mjs",
-    "test": "c8 --reporter=text mocha --slow 50 --timeout 300000 ",
+    "test": "c8 --100 --reporter=text mocha --slow 50 --timeout 300000 ",
     "coverage": "c8 --reporter=text-lcov mocha --timeout 300000 | coveralls ",
     "go": "npm run lint && npm run lint-test && npm run test && npm run docs"
   },
