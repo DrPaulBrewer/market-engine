@@ -443,15 +443,15 @@ describe('MarketEngine', ()=>{
           bad1.should.throw();
           bad2.should.throw();
         });
-        it('should throw when a non-existent order is reduced', ()=>{
+        it('should throw a ReferenceError when a non-existent order is reduced', ()=>{
           function bad1(){
             X.reduceQ([5],[1]);
           }
           function bad2(){
             Z.reduceQ([0],[1]);
           }
-          bad1.should.throw();
-          bad2.should.throw();
+          bad1.should.throw(/a\[5\]/);
+          bad2.should.throw(/a\[0\]/);
         });
         it('should ignore requests on an object without the .a property', ()=>{
           delete ZZ.a;
