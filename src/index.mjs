@@ -188,14 +188,18 @@ export class MarketEngine extends EventEmitter {
      */
 
     reduceQ(ais, qs){
-        let i=0,l=ais.length,qCol=this.o.qCol;
-        let trash = this.trash, a=this.a;
-        let order;
+        const l=ais.length,qCol=this.o.qCol;
+        const trash = this.trash, a=this.a;
         if (!a) return;
+        const alength = a.length;
         if (ais.length!==qs.length)
           throw new Error("market-engine:reduce The array parameters should be equal length, got lengths:"+ais.length+' '+qs.length);
-        for(i=0;i<l;++i){
-            order = a[ais[i]];
+        for(let i=0;i<l;++i){
+            const aidx = +ais[i];
+            if (!Number.isFinite(aidx) || (aidx<0) || (aidx>=alength)){
+              throw new ReferenceError(`a[${aidx}] (valid indexes are 0..${alength-1}) when i=${i} in market-engine.reduceQ()`);
+            }
+            const order = a[aidx];
             order[qCol] -= qs[i]; // if order is undefined, this will throw
             if (order[qCol]<0)
                 throw new Error('quantity ('+qs[i]+') exceeded availability in order:');
