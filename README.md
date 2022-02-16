@@ -1,8 +1,9 @@
 # market-engine
 
 ![Build Status](https://github.com/DrPaulBrewer/market-engine/actions/workflows/node.js.yml/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/DrPaulBrewer/market-engine/badge.svg?branch=master)](https://coveralls.io/github/DrPaulBrewer/market-engine?branch=master)
-
+[![Known Vulnerabilities](https://snyk.io/test/github/DrPaulBrewer/market-engine/badge.svg)](https://snyk.io/test/github/DrPaulBrewer/market-engine)
+[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/DrPaulBrewer/market-engine.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/DrPaulBrewer/market-engine/context:javascript)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/DrPaulBrewer/market-engine.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/DrPaulBrewer/market-engine/alerts/)
 
 Provides EventEmitter framework for market/auction implementations, order storage and insertion/cancellation/expiration functionality
 
